@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Sentiment Analysis | Skincare Overclaim</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1><span class="highlight">AI</span> SENTIMENT ANALYZER</h1>
+            <p>Membaca Opini Publik Seputar Kasus Skincare Overclaim menggunakan LSTM</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card interactive-panel">
+            <h2><span class="icon">💻</span> Sistem Prediksi LSTM (Live)</h2>
+            <p class="subtitle">Masukkan data uji berupa teks ulasan atau komentar media sosial:</p>
+            <textarea id="inputText" rows="4" placeholder=">> INPUT TEKS:"></textarea>
+            <button onclick="analyze()" id="btnAnalyze">EKSEKUSI ANALISIS 🚀</button>
+            
+            <div id="resultBox" class="result-box">
+                <div class="result-header">STATUS ANALISIS: <span id="labelResult" class="label-badge"></span></div>
+                <div class="result-body">
+                    Tingkat Keyakinan Model (Confidence): <strong id="confResult" class="glow-text"></strong><span class="glow-text">%</span>
+                </div>
+            </div>
+        </section>
+
+        <div class="visual-grid">
+            <section class="card img-card">
+                <h2>📊 Distribusi Sentimen</h2>
+                <img src="{{ url_for('static', filename='distribusi sentimen.png') }}" class="responsive-img" alt="Distribusi Sentimen">
+            </section>
+
+            <section class="card img-card">
+                <h2>📈 Performa Model LSTM</h2>
+                <img src="{{ url_for('static', filename='model lstm.png') }}" class="responsive-img" alt="Performa Model">
+            </section>
+
+            <section class="card img-card">
+                <h2>🧠 Ekstraksi Kata Kunci</h2>
+                <img src="{{ url_for('static', filename='kata kunci 2.png') }}" class="responsive-img" alt="Wordcloud">
+            </section>
+
+            <section class="card img-card">
+                <h2>🎯 Evaluasi Matriks</h2>
+                <img src="{{ url_for('static', filename='Confusion_Matrix_LSTM.png') }}" class="responsive-img" alt="Confusion Matrix">
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <p>System Developed Sigit Miraj Permana | FTI UNIBBA | Kecerdasan Buatan 2026</p>
+    </footer>
+
+    <script>
+        async function analyze() {
+            const teks = document.getElementById('inputText').value;
+            const resultBox = document.getElementById('resultBox');
+            const labelResult = document.getElementById('labelResult');
+            const confResult = document.getElementById('confResult');
+            const btn = document.getElementById('btnAnalyze');
+
+            if (!teks) { alert("ERROR: Input teks tidak boleh kosong."); return; }
+
+            btn.innerText = "MEMPROSES DATA... ⏳"; btn.disabled = true;
+
+            try {
+                const res = await fetch('/predict', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teks: teks })
+                });
+                const data = await res.json();
+                
+                labelResult.innerText = data.sentimen.toUpperCase();
+                confResult.innerText = data.confidence;
+                
+                // Tema warna berdasarkan hasil
+                resultBox.className = "result-box " + data.sentimen;
+                resultBox.style.display = "block";
+            } catch (e) { alert("FATAL ERROR: Koneksi ke model AI terputus."); }
+
+            btn.innerText = "EKSEKUSI ANALISIS 🚀"; btn.disabled = false;
+        }
+    </script>
+</body>
+</html>
